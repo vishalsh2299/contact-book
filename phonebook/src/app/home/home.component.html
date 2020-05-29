@@ -1,0 +1,182 @@
+<div style="text-align: center; font-size: xx-large; margin: 2%; font-weight: 500; letter-spacing: 10px;">
+    Contact Book
+  </div>
+  <div style="margin-left: 20%; margin-right: 20%;margin-top: 3%;">
+  <div>
+      <div *ngIf="status == 1"><button (click)="createNewView()" mat-raised-button color="warn">Add New Contact</button></div>
+      <div *ngIf="status == 2"><button (click)="this.status = 1" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">home</mat-icon>
+      </button></div>
+      <div *ngIf="status == 3"><button (click)="this.status = 1" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">home</mat-icon>
+      </button></div>
+  </div>
+  <div *ngIf="loading" style="margin-top: 5px; margin-bottom: 5px;">
+    <mat-progress-bar color="warn" mode="indeterminate"></mat-progress-bar>
+  </div>
+
+
+
+  <div>
+      <div *ngIf="status == 1;then list" ></div>
+      <div *ngIf="status == 2;then newcontact" ></div>
+      <div *ngIf="status == 3;then editcontact" ></div>
+    <ng-template #list>
+        <mat-form-field style="width: 100%; margin-top: 1%;">
+            <mat-label>Search</mat-label>
+            <input matInput (keyup)="applySearch($event)" placeholder="Name, Phone Number , Email Id">
+          </mat-form-field>
+        <mat-accordion>
+            <div *ngFor="let contact of contacts">
+            <mat-expansion-panel style="margin-top: 1%;">
+              <mat-expansion-panel-header>
+                <mat-panel-title style="font-size: larger;"> 
+                  {{contact.name}}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div style="font-size: larger; font-weight: 500;">
+                Date of Birth
+              </div>
+              <div>
+                  {{contact.dob | slice :0:10 }}
+              </div>
+              <br/>
+              <div style="font-size: larger; font-weight: 500;">
+                  Phone Number
+              </div>
+              <div *ngFor="let number of contact.phonenumbers">
+                {{number.number}}
+              </div>
+              <br/>
+              <div style="font-size: larger; font-weight: 500;">
+                Email Addresses
+             </div>
+              <div *ngFor="let email of contact.emailid">
+                {{email.emailid}}
+              </div>
+              <br/>
+              <div>
+                <button (click)="contactEdit(contact)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">edit</mat-icon>
+                </button>
+                <button (click)="contactDelete(contact)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">delete</mat-icon>
+                </button>
+              </div>
+            </mat-expansion-panel>
+        </div>
+            
+          </mat-accordion>
+          <mat-paginator [length]="length"
+               [pageSize]="pageSize"
+               [pageSizeOptions]="pageSizeOptions"
+               (page)="pageEvent($event)">
+</mat-paginator>
+
+          
+    </ng-template>
+
+
+
+
+    <ng-template #newcontact>
+      <mat-card>
+        <mat-card-title>Add New Contact</mat-card-title>
+        <mat-card-content>
+          <mat-form-field appearance="legacy">
+            <mat-label>Name</mat-label>
+            <input [(ngModel)]="send_name" matInput required placeholder="Name">
+          </mat-form-field>
+        <br/>
+        <mat-form-field>
+          <mat-label>Date of Birth</mat-label>
+          <input [(ngModel)]="send_dob" matInput [matDatepicker]="picker">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <br/>
+        <div style="font-weight: 500; font-size: large;">
+            Phone Numbers
+        </div>
+        <div *ngFor="let number of send_number; let i=index" >
+          <mat-form-field appearance="legacy">
+            <mat-label>Number</mat-label>
+            <input type="number" [(ngModel)]="number.number" matInput placeholder="Name">
+          </mat-form-field>
+          <button *ngIf="this.send_number.length > 1" (click)="removeNumber(i)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">close</mat-icon>
+          </button>
+          <button *ngIf="this.send_number.length == i+1" (click)="this.send_number.push({number:''})" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">add</mat-icon>
+            </button>
+        </div>
+        <div style="font-weight: 500; font-size: large;">
+            Email Addresses
+        </div>
+        <div *ngFor="let emailid of send_emailid; let j=index">
+          <mat-form-field appearance="legacy">
+            <mat-label>Email Id</mat-label>
+            <input type="email" [(ngModel)]="emailid.emailid" matInput placeholder="Name">
+          </mat-form-field>
+          <button *ngIf="this.send_emailid.length > 1" (click)="removeEmail(j)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">close</mat-icon>
+          </button>
+          <button *ngIf="this.send_emailid.length == j+1" (click)="this.send_emailid.push({emailid:''})" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">add</mat-icon>
+          </button>
+        </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button (click)="saveNewContact()">Save</button>
+          <button mat-button (click)="this.status = 1">Discard</button>
+        </mat-card-actions>
+      </mat-card>
+    </ng-template>
+
+
+
+    <ng-template #editcontact>
+        <mat-card>
+            <mat-card-title>Edit Contact</mat-card-title>
+            <mat-card-content>
+              <mat-form-field appearance="legacy">
+                <mat-label>Name</mat-label>
+                <input [(ngModel)]="send_name" matInput required placeholder="Name">
+              </mat-form-field>
+            <br/>
+            <mat-form-field>
+              <mat-label>Date of Birth</mat-label>
+              <input [(ngModel)]="send_dob" matInput [matDatepicker]="picker">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+            <br/>
+            <div style="font-weight: 500; font-size: large;">
+                Phone Numbers
+            </div>
+            <div *ngFor="let number of send_number; let i=index">
+              <mat-form-field appearance="legacy">
+                <mat-label>Number</mat-label>
+                <input type="number" [(ngModel)]="number.number" matInput placeholder="Name">
+              </mat-form-field>
+              <button *ngIf="this.send_number.length > 1" (click)="removeNumber(i)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">close</mat-icon>
+              </button>
+              <button *ngIf="this.send_number.length == i+1" (click)="this.send_number.push({number:''})" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">add</mat-icon>
+                </button>
+            </div>
+            <div style="font-weight: 500; font-size: large;">
+                Email Addresses
+            </div>
+            <div *ngFor="let emailid of send_emailid; let j=index">
+              <mat-form-field appearance="legacy">
+                <mat-label>Email Id</mat-label>
+                <input type="email" [(ngModel)]="emailid.emailid" matInput placeholder="Name">
+              </mat-form-field>
+              <button *ngIf="this.send_emailid.length > 1" (click)="removeEmail(j)" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">close</mat-icon>
+              </button>
+              <button *ngIf="this.send_emailid.length == j+1" (click)="this.send_emailid.push({emailid:''})" mat-icon-button color="warn"><mat-icon aria-hidden="false" aria-label="Example home icon">add</mat-icon>
+              </button>
+            </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-button (click)="updateNewContact()">Update</button>
+              <button mat-button (click)="this.status = 1">Discard</button>
+            </mat-card-actions>
+          </mat-card>
+    </ng-template>
+    
+        
+  </div>
+</div>
